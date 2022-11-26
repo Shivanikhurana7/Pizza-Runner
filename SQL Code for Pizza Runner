@@ -1,0 +1,91 @@
+-- PIZZA RUNNER PROJECT --
+
+-- Data Cleaning --
+
+-- Setting blank string value for the Exclusions to NULL --
+Update customer_orders
+Set exclusions = NULL
+Where exclusions in ('null',"");
+
+-- Setting "null" string value for the extra to NULL --
+Update customer_orders
+Set extras = NULL
+Where extras in ('null',"");
+
+-- Setting "null" string value for the runner_id to NULL --
+Update runner_orders
+Set cancellation = null
+Where cancellation in ('null',"");
+
+------------------------------------------------------------------------
+
+-- Total Order --
+Select count(order_id) AS Total_order
+From customer_orders;
+
+-- Unique Orders --
+Select count(distinct order_id) AS Unique_order
+From customer_orders;
+
+-- Successful order delivered by each runner --
+Select runner_id,
+		count(runner_id) AS Successful_order_delivered
+From runner_orders
+Where cancellation is NULL
+Order by runner_id; 
+
+-- How many of each type of pizza is delivered? --
+Select p.pizza_name,count(c.pizza_id) AS successful_orders
+From pizza_names p
+Inner Join customer_orders c
+On p.pizza_id=c.pizza_id
+Group by p.pizza_id = c.pizza_id;
+
+-- How many Vegetarian and Meatlovers were ordered by each customer? --
+Select c.customer_id,c.pizza_id, p.pizza_name
+From customer_orders c
+Inner Join pizza_names p
+On c.pizza_id = p.pizza_id
+Group by customer_id;
+
+-- maximum orders delivered in single order --
+Select order_id, count(order_id) AS Total_orders
+From customer_orders
+Group by order_id
+Order by Total_orders desc;
+
+-- Pizzas orders without change --
+Select customer_id, order_id, count(order_id) AS Pizza_without_change
+From customer_orders
+Where exclusions is NULL
+and extras is NULL
+Group by customer_id;
+
+-- Pizzas orders with change --
+Select customer_id, order_id, count(order_id) AS Pizza_with_change
+From customer_orders
+Where exclusions is NOT NULL
+and extras is NOT NULL
+Group by customer_id;
+
+-- Pizzas delivered with both exclusions and extras --
+Select customer_id, order_id
+From customer_orders
+Where exclusions is NOT NULL
+and extras is NOT NULL
+Group by customer_id;
+
+-- Total volume of pizzas ordered each hour --
+Select concat(HOUR(order_time),':00') AS Order_time,
+		count(order_id) AS no_of_orders
+From customer_orders
+Group by HOUR(order_time)
+Order by Order_time desc;
+
+-- Volume of orders for each day of the week
+Select Dayname(order_time) AS Order_time,
+		count(order_id) AS no_of_orders
+From customer_orders
+Group by dayname(order_time)
+Order by Order_time desc;
+
